@@ -35,6 +35,11 @@ stages:
 
 
     steps:
+    # Installing Zip
+    - bash: |
+        sudo apt-get install -y zip
+      displayName: "Installing Zip"
+      
      #Checking python installation.
     - bash: |
         if command -v python3 &>/dev/null; then
