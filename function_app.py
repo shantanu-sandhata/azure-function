@@ -4,7 +4,7 @@ import json
 
 data = {
   "about us": {
-    "name": "Sandhata",
+    "name": "Sandhata Technologies",
     "Countries": "United Kingdom, Inida, United States, South Africa",
     "Continents": "Asia, Europe, Africa, North America",
     "phone": "+44 2076807105",
