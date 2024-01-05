@@ -1,0 +1,109 @@
+# Python Function App to Linux on Azure
+# Build a Python function app and deploy it to Azure as a Linux function app.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+trigger:
+- main
+
+pool:
+  name: "SandhataVmssPool"
+
+variables:
+  # Azure Resource Manager connection created during pipeline creation
+  azureSubscription: '784e673a-1a23-4961-b561-497c807500c2'
+
+  # Function app name
+  functionAppName: 'sandhata'
+
+  # Agent VM image name
+  vmImageName: 'SandhataVmssPool'
+
+  # Working Directory
+  workingDirectory: 'Default'
+  
+  #Python Version
+  pythonVersion: '3.10'
+
+stages:
+- stage: Build
+  displayName: Build stage
+
+  jobs:
+  - job: Build
+    displayName: Build
+
+
+    steps:
+     #Checking python installation.
+    - bash: |
+        if command -v python3 &>/dev/null; then
+            echo "Python 3 is installed."
+            echo "The python version is..."
+            python3 -V > pythonversion.txt
+            cat pythonversion.txt
+        else 
+            echo "Python 3 is not installed. Installing Python 3..."
+            sudo apt update
+            sudo apt install -y python3
+            if command -v python3 &>/dev/null; then
+                echo "Python 3 installed successfully." python3 -V > pythonversion.txt
+                cat pythonversion.txt
+            else
+                echo "Python 3 could not be installed."
+            fi
+        fi
+      displayName: 'Checking Python Installation'
+
+    - bash: |
+        if [ -f extensions.csproj ]
+        then
+            dotnet build extensions.csproj --runtime ubuntu.16.04-x64 --output ./bin
+        fi
+      workingDirectory: $(workingDirectory)
+      displayName: 'Build extensions'
+
+    - task: UsePythonVersion@0
+      displayName: 'Use Python $(pythonVersion)'
+      inputs:
+        versionSpec: '$(pythonVersion)'
+
+    - bash: |
+        pip install --target="./.python_packages/lib/site-packages" -r ./requirements.txt
+      workingDirectory: $(workingDirectory)
+      displayName: 'Install application dependencies'
+
+    - task: ArchiveFiles@2
+      displayName: 'Archive files'
+      inputs:
+        rootFolderOrFile: '$(workingDirectory)'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        replaceExistingArchive: true
+
+    - publish: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+      artifact: drop
+
+- stage: Deploy
+  displayName: Deploy stage
+  dependsOn: Build
+  condition: succeeded()
+
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    environment: 'Shantanu-Env'
+
+    strategy:
+      runOnce:
+        deploy:
+
+          steps:
+          - task: AzureFunctionApp@1
+            displayName: 'Azure functions app deploy'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appType: functionAppLinux
+              appName: $(functionAppName)
+              package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
