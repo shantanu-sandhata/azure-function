@@ -23,7 +23,7 @@ data = {
     }]
   },
   "customers": [{
-    "Clients": "Reliance, Bank of America, BMC, Verizon, Oracle, Vodafone",
+    "Clients": "Reliance, Bank of America, BMC, Verizon, Oracle, Vodafone, Infosys",
   }]
 }
 
