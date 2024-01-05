@@ -20,7 +20,7 @@ variables:
   vmImageName: 'SandhataVmssPool'
 
   # Working Directory
-  workingDirectory: 'Default'
+  workingDirectory: '$(System.DefaultWorkingDirectory)'
   
   #Python Version
   pythonVersion: '3.10'
