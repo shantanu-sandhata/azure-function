@@ -78,8 +78,8 @@ stages:
       inputs:
         rootFolderOrFile: '$(workingDirectory)'
         includeRootFolder: false
-        archiveType: zip
-        archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
         replaceExistingArchive: true
 
     - publish: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
